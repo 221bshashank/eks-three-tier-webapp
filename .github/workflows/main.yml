@@ -2,9 +2,9 @@ name: 3-Tier App CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   AWS_REGION: us-east-1
@@ -22,24 +22,28 @@ jobs:
       - name: Find all YAML files
         run: |
           echo "📋 Searching for Kubernetes manifests..."
-          find Kubernetes-Manifests-file -name "*.yaml" -o -name "*.yml" | head -20
+          find Kubernetes-Manifests-file -name "*.yaml" \
+            -o -name "*.yml" | head -20
 
       - name: Validate YAML syntax
         run: |
           echo "🔍 Validating YAML syntax..."
           pip install yamllint pyyaml -q
-          
-          for file in $(find Kubernetes-Manifests-file -type f \( -name "*.yaml" -o -name "*.yml" \)); do
+          for file in $(find Kubernetes-Manifests-file -type f \
+            \( -name "*.yaml" -o -name "*.yml" \)); do
             echo "✓ Checking: $file"
-            python3 -c "import yaml; yaml.safe_load(open('$file'))" && echo "  ✅ Valid" || echo "  ❌ Invalid"
+            python3 -c "import yaml; yaml.safe_load(open('$file'))"
+            echo "  ✅ Valid"
           done
 
       - name: Validate Kubernetes schemas
         run: |
           echo "🔍 Validating Kubernetes manifests structure..."
-          for file in $(find Kubernetes-Manifests-file -type f \( -name "*.yaml" -o -name "*.yml" \)); do
+          for file in $(find Kubernetes-Manifests-file -type f \
+            \( -name "*.yaml" -o -name "*.yml" \)); do
             echo "✓ Schema check: $file"
-            if grep -q "^apiVersion:" "$file" && grep -q "^kind:" "$file"; then
+            if grep -q "^apiVersion:" "$file" && \
+               grep -q "^kind:" "$file"; then
               echo "  ✅ Has apiVersion and kind"
             else
               echo "  ⚠ Missing required fields"
@@ -51,11 +55,13 @@ jobs:
           echo ""
           echo "📁 Project Structure:"
           echo "==================="
-          tree -L 3 Kubernetes-Manifests-file/ 2>/dev/null || find Kubernetes-Manifests-file -type f | sort
+          tree -L 3 Kubernetes-Manifests-file/ 2>/dev/null || \
+            find Kubernetes-Manifests-file -type f | sort
           echo ""
           echo "📁 Application Code Structure:"
           echo "=============================="
-          tree -L 3 Application-Code/ 2>/dev/null || find Application-Code -type f | sort
+          tree -L 3 Application-Code/ 2>/dev/null || \
+            find Application-Code -type f | sort
 
   # Job 2: Lint and Build Backend
   backend:
@@ -69,7 +75,8 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: Application-Code/backend/package-lock.json
+          cache-dependency-path: |
+            Application-Code/backend/package-lock.json
 
       - name: Install dependencies
         working-directory: Application-Code/backend
@@ -82,14 +89,16 @@ jobs:
         working-directory: Application-Code/backend
         run: |
           echo "🔍 Running ESLint..."
-          npm run lint --if-present || echo "⚠️ No lint script defined"
+          npm run lint --if-present || \
+            echo "⚠️ No lint script defined"
         continue-on-error: true
 
       - name: Run unit tests
         working-directory: Application-Code/backend
         run: |
           echo "🧪 Running unit tests..."
-          npm test --if-present || echo "⚠️ No test script defined"
+          npm test --if-present || \
+            echo "⚠️ No test script defined"
         continue-on-error: true
 
       - name: Build Docker image for backend
@@ -97,7 +106,8 @@ jobs:
         run: |
           echo "🐳 Building backend Docker image..."
           docker build -t ${{ env.BACKEND_IMAGE }}:${{ github.sha }} .
-          echo "✅ Backend image: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}"
+          echo "✅ Backend image: \
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}"
 
       - name: Scan backend image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -119,7 +129,8 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: Application-Code/frontend/package-lock.json
+          cache-dependency-path: |
+            Application-Code/frontend/package-lock.json
 
       - name: Install dependencies
         working-directory: Application-Code/frontend
@@ -132,14 +143,16 @@ jobs:
         working-directory: Application-Code/frontend
         run: |
           echo "🔍 Running ESLint..."
-          npm run lint --if-present || echo "⚠️ No lint script defined"
+          npm run lint --if-present || \
+            echo "⚠️ No lint script defined"
         continue-on-error: true
 
       - name: Run unit tests
         working-directory: Application-Code/frontend
         run: |
           echo "🧪 Running unit tests..."
-          npm test --if-present -- --watchAll=false || echo "⚠️ No test script defined"
+          npm test --if-present -- --watchAll=false || \
+            echo "⚠️ No test script defined"
         continue-on-error: true
 
       - name: Build React application
@@ -154,7 +167,8 @@ jobs:
         run: |
           echo "🐳 Building frontend Docker image..."
           docker build -t ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} .
-          echo "✅ Frontend image: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}"
+          echo "✅ Frontend image: \
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}"
 
       - name: Scan frontend image with Trivy
         uses: aquasecurity/trivy-action@master
@@ -177,7 +191,8 @@ jobs:
       - name: Lint all YAML files
         run: |
           echo "🔍 Linting YAML files..."
-          yamllint -d relaxed Kubernetes-Manifests-file/ .github/workflows/ || true
+          yamllint -d relaxed Kubernetes-Manifests-file/ \
+            .github/workflows/ || true
         continue-on-error: true
 
   # Job 5: Summary Report
@@ -189,9 +204,9 @@ jobs:
       - name: Pipeline Summary
         run: |
           echo ""
-          echo "═══════════════════════════════════════════════════════════════"
-          echo "            ✅ CI/CD PIPELINE EXECUTION COMPLETE"
-          echo "═══════════════════════════════════════════════════════════════"
+          echo "═════════════════════════════════════════════════"
+          echo "  ✅ CI/CD PIPELINE EXECUTION COMPLETE"
+          echo "═════════════════════════════════════════════════"
           echo ""
           echo "📋 JOBS EXECUTED:"
           echo "  ✓ Kubernetes Manifests Validation"
@@ -208,5 +223,5 @@ jobs:
           echo "  • YAML validation"
           echo ""
           echo "Status: ${{ job.status }}"
-          echo "═══════════════════════════════════════════════════════════════"
+          echo "═════════════════════════════════════════════════"
           echo ""
