@@ -1,0 +1,30 @@
+name: Validate 3-Tier App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Kubeval (Lint Kubernetes Manifests)
+        run: |
+          curl -L https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz | tar xz
+          sudo mv kubeval /usr/local/bin/
+
+      - name: Run Kubeval on Manifests
+        run: |
+          kubeval Kubernetes-Manifests-file/Backend/deployment.yaml
+          kubeval Kubernetes-Manifests-file/Frontend/deployment.yaml
+          kubeval Kubernetes-Manifests-file/Database/deployment.yaml
+
+      - name: Check Project Structure
+        run: |
+          ls -R Application-Code/
+          ls -R Kubernetes-Manifests-file/
