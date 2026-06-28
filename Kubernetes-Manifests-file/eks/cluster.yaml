@@ -1,0 +1,18 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: three-tier-cluster
+  region: us-east-1
+
+iam:
+  serviceRoleARN: arn:aws:iam::211125536240:role/eksClusterRole
+
+nodeGroups:
+  - name: self-managed-nodes
+    instanceType: t3.medium          # Allowed instance size class
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 2
+    volumeType: gp2                 # Explicitly mandated by the lab guide
+    volumeSize: 30                  # Max disk size permitted by lab rules
