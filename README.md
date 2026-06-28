@@ -83,7 +83,6 @@ sudo apt install unzip -y
 unzip awscliv2.zip
 sudo ./aws/install --update
 aws configure
-```
 
 # Bootstrap the local Docker platform engine
 sudo apt-get update
