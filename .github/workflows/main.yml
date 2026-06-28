@@ -19,18 +19,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install kube-linter
+      - name: Validate Kubernetes Manifests with kubeval
         run: |
-          curl -L https://github.com/stackrox/kube-linter/releases/download/0.6.4/kube-linter-linux.tar.gz | tar xz
-          sudo mv kube-linter /usr/local/bin/
-
-      - name: Validate Kubernetes Manifests with kube-linter
-        run: |
+          echo "Installing kubeval..."
+          wget -O kubeval.tar.gz https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval.tar.gz
+          chmod +x kubeval
+          
           echo "Validating Kubernetes manifests..."
           for file in Kubernetes-Manifests-file/**/*.yaml; do
             if [ -f "$file" ]; then
               echo "Validating: $file"
-              kube-linter lint "$file" || true
+              ./kubeval --ignore-missing-schemas "$file" || true
             fi
           done
 
@@ -127,7 +127,7 @@ jobs:
       - name: Check all jobs status
         run: |
           echo "✅ CI Pipeline Complete"
-          echo "- Kubernetes manifests validated with kube-linter"
+          echo "- Kubernetes manifests validated"
           echo "- Backend built and Docker image created"
           echo "- Frontend built and Docker image created"
           echo "- Security scans completed with Trivy"
