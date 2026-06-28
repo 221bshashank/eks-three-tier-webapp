@@ -411,5 +411,8 @@ To safely clear all infrastructure components and minimize running costs:
 ```bash
 eksctl delete cluster \
   --name <three-tier-cluster> \
-  --region <us-east-1>
+  --region <us-east-1> \
+  --force \
+  --disable-nodegroup-eviction
+
 ```
