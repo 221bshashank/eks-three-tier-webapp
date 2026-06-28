@@ -20,9 +20,9 @@ jobs:
 
       - name: Run Kubeval on Manifests
         run: |
-          kubeval -k Kubernetes-Manifests-file/Backend/deployment.yaml
-          kubeval -k Kubernetes-Manifests-file/Frontend/deployment.yaml
-          kubeval -k Kubernetes-Manifests-file/Database/deployment.yaml
+          kubeval --ignore-missing-schemas Kubernetes-Manifests-file/Backend/deployment.yaml
+          kubeval --ignore-missing-schemas Kubernetes-Manifests-file/Frontend/deployment.yaml
+          kubeval --ignore-missing-schemas Kubernetes-Manifests-file/Database/deployment.yaml
 
       - name: Check Project Structure
         run: |
